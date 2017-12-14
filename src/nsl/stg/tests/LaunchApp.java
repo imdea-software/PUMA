@@ -77,6 +77,8 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 	private UIStateManager sManager = UIStateManager.getInstance();
 	private ExplorationStateManager eManager = ExplorationStateManager.getInstance();
 
+	private static int covCounter = 0;
+
 	// ============================================================
 	// Proof-of-concept for passive monkey
 	public void _testPassiveMonkey() {
@@ -87,7 +89,7 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 		final String fn = "/sdcard/haos/events.log";
 		Util.openFile(fn, true);
 
-		// intercept all events 
+		// intercept all events
 		dev.getUiAutomation().setOnAccessibilityEventListener(new OnAccessibilityEventListener() {
 			public void onAccessibilityEvent(AccessibilityEvent event) {
 				CharSequence pack_name = event.getPackageName();
@@ -181,7 +183,7 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 	// workaround for emulator
 	private void takeScreenshot(final String filePath) {
 		try {
-			// IMPORTANT: WRONG WAY TO USE PROCESS, WASTED TWO DAYS! 
+			// IMPORTANT: WRONG WAY TO USE PROCESS, WASTED TWO DAYS!
 			// Process p = new ProcessBuilder("screencap -p " + filePath).start();
 			Process p = Runtime.getRuntime().exec("screencap -p " + filePath);
 			p.waitFor();
@@ -231,7 +233,8 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 
 		long startTimeMillis = SystemClock.uptimeMillis();
 		long currTimeMillis;
-		final long TIMEOUT = 1200000; // 20 mins
+//		final long TIMEOUT = 1200000; // 20 mins
+		final long TIMEOUT = 3600000; // 1 hour
 
 		while (!finalDone) {
 			currTimeMillis = SystemClock.uptimeMillis();
@@ -332,7 +335,7 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 							break;
 						}
 					}
-				} else { // we are still outside, but most likely in another app via INTENT. Pressing BACK may lead us back.					
+				} else { // we are still outside, but most likely in another app via INTENT. Pressing BACK may lead us back.
 					Util.log("In 3rd-party app. Pressing BACK.");
 
 					ExplorationState fromState = new ExplorationState(sManager.getState(lastState), lastState.computeFeatureHash());
@@ -348,7 +351,7 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 			}
 
 			// ========================================
-			// NORMAL STATE EXPLORATION			
+			// NORMAL STATE EXPLORATION
 			sManager.addState(currState);
 
 			if (clickId >= 0) {
@@ -407,6 +410,11 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 
 	private void force_stop() {
 		Util.log("force_stop");
+
+		// Androtest: Collect coverage before stopping activity
+		execShell("am broadcast -a edu.gatech.m3.emma.COLLECT_COVERAGE");
+		execShell("cp /mnt/sdcard/coverage.ec /mnt/sdcard/coverage."+packName+"."+(covCounter++)+".ec");
+
 		execShell("am force-stop " + packName);
 		execShell("pm clear " + packName);
 	}
@@ -473,12 +481,14 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 		return ret;
 	}
 
-	// Save timestamped screenshot 
+	// Save timestamped screenshot
 	private void dump_screen(String fileName, Rect bounds) {
 		dev.dumpWindowHierarchy(fileName + ".xml");
 		String screenshotFile = "/data/local/tmp/local/tmp/" + fileName + ".png";
-		boolean status = dev.takeScreenshot(new File(screenshotFile), 1.0f, 90);
-		Util.log("screenshot: " + (status ? "OK" : "FAIL"));
+
+		//boolean status = dev.takeScreenshot(new File(screenshotFile), 1.0f, 90);
+		//Util.log("screenshot: " + (status ? "OK" : "FAIL"));
+    takeScreenshot(screenshotFile);
 
 		Bitmap original = BitmapFactory.decodeFile(screenshotFile);
 		Bitmap modified = original.copy(Bitmap.Config.ARGB_8888, true);
@@ -591,8 +601,11 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 	// More robust way to get source AccessibilityNodeInfo node
 	// NOTE: possible to be null
 	private AccessibilityNodeInfo getRootNode() {
-		final int maxRetry = 4;
-		final long waitInterval = 250; // 0.25s
+		//final int maxRetry = 4;
+		//final long waitInterval = 250; // 0.25s
+		// SRC: Increasing wait times
+		final int maxRetry = 100;
+		final long waitInterval = 1000; // 1s
 		AccessibilityNodeInfo rootNode = null;
 
 		for (int x = 0; x < maxRetry; x++) {
@@ -1540,12 +1553,12 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 		launcherPackName = appsTab.getPackageName(); // remember the launcher package
 		appsTab.click();
 
-		// 3. Select scrollable "container view" 
+		// 3. Select scrollable "container view"
 		UiScrollable appViews = new UiScrollable(new UiSelector().scrollable(true));
 		// Set the swiping mode to horizontal (the default is vertical)
 		appViews.setAsHorizontalList();
 
-		// 4. This API does not work properly in 4.2.2 
+		// 4. This API does not work properly in 4.2.2
 		appViews.scrollTextIntoView(appName);
 
 		// 5. Click target app
@@ -1679,7 +1692,7 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 		}
 	}
 
-	// Find all leaf nodes (guarantee not NULL) 
+	// Find all leaf nodes (guarantee not NULL)
 	private List<AccessibilityNodeInfo> get_leaf_nodes(AccessibilityNodeInfo root) {
 		List<AccessibilityNodeInfo> ret = new ArrayList<AccessibilityNodeInfo>();
 		Queue<AccessibilityNodeInfo> Q = new LinkedList<AccessibilityNodeInfo>();
