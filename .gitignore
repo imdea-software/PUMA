@@ -10,3 +10,15 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+# local files, autogenerte and more
+local.properties
+app.uid*
+/bin
+gen/nsl/stg/tests/BuildConfig.java
+gen/nsl/stg/tests/R.java
+
+# this files are forget
+# https://stackoverflow.com/a/1274447/8091456
+# app.info
+# project.properties
