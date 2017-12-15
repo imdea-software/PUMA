@@ -18,7 +18,7 @@ app.uid*
 gen/nsl/stg/tests/BuildConfig.java
 gen/nsl/stg/tests/R.java
 
-# this files are forget
-# https://stackoverflow.com/a/1274447/8091456
+# tracked in the origin repo but omit his modification for git
+# https://stackoverflow.com/a/16442091/8091456
 # app.info
 # project.properties
