@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-if [ $# -ne 2 ]; then
-  echo "Usage: $0 <app_apk_path> <time_to_run_puma_in_min>"
-  echo "Example: $0 \"/home/vagrant/subjects/a2dp.Vol_93_src\" \"10\""
+if [ $# -ne 3 ]; then
+  echo "Usage: $0 <app_apk_path> <time_to_run_puma_in_min> <SDK>"
+  echo "Example: $0 \"/home/vagrant/subjects/a2dp.Vol_93_src\" \"10\" \"19\""
   exit
 fi
 
@@ -19,6 +19,14 @@ if [[  -z ${time} ]]; then
   echo "Run again passing the correct time number"
   exit 1
 fi
+
+SDK=${3:-19}
+if [[ -z ${SDK} ]]; then
+  echo "This var: SDK - Not setted"
+  echo "Run again passing the correct time number"
+  exit 1
+fi
+SDK_name="android-${SDK}"
 
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -70,6 +78,11 @@ fi
 
 
 echo "2. Start command"
+
+CMD="android update project -t ${SDK_name} -p . --subprojects"
+echo "        * ${CMD}"
+eval ${CMD}
+[[ $? -ne 0 ]] && echo "ERROR" && exit 1
 
 CMD="ant build"
 echo "        * ${CMD}"

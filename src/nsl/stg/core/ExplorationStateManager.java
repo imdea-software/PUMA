@@ -142,6 +142,8 @@ public class ExplorationStateManager {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("Shortest path: ");
+		Util.log("[copmuteShortestPath] fromState.dumpShort(): " + fromState.dumpShort());
+		Util.log("[copmuteShortestPath] toState.dumpShort(): " + toState.dumpShort());
 		sb.append(fromState.dumpShort() + "--> " + toState.dumpShort() + " = {");
 		sb.append(ret);
 		sb.append("}\n");
@@ -150,50 +152,68 @@ public class ExplorationStateManager {
 		return ret;
 	}
 
-	// Find the first exploration state that refers to given UIState.
-	// Guarantee that we return the FIRST exploration state for this cluster-head UI state.
+	/**
+	 * Find the first exploration state that refers to given UIState.
+	 * @param clusterRef UIState
+	 * @return the FIRST exploration state for this cluster-head UI state.
+     */
 	public ExplorationState findExplorationState(UIState clusterRef) {
+		Util.log("[findExplorationState] ARG: UIState clusterRef = " + clusterRef);
+
 		ExplorationState ret = null;
 
 		for (Iterator<ExplorationState> iter = states.iterator(); iter.hasNext();) {
 			ExplorationState eState = iter.next();
 			UIState refState = eState.getClusterRef();
 
-			// Util.log("Comparing " + refState.dumpShort() + " vs " + uiState.dumpShort());
+			Util.log("[findExplorationState] Comparing " + refState.dumpShort() + " vs " + clusterRef.dumpShort());
 
 			if (refState.equals(clusterRef)) {
-				// Util.log("Found: " + refState.dumpShort());
+				Util.log("[findExplorationState] Found: " + refState.dumpShort());
 				ret = eState;
 				break;
 			}
 		}
 
+		Util.log("[findExplorationState] ExplorationState ret = " + ret);
 		return ret;
 	}
 
+	/**
+	 *
+	 * @param fromState
+	 * @return
+     */
 	public ExplorationState findNearestExplorationState(ExplorationState fromState) {
 		List<UIState> allTodos = UIStateManager.getInstance().getAllTodoState();
+		Util.log("[findNearestExplorationState] List<UIState> allTodos = " + allTodos);
 		ExplorationState toState, ret = null;
 		int minSteps = Integer.MAX_VALUE;
 
 		for (int i = 0; i < allTodos.size(); i++) {
 			UIState todoState = allTodos.get(i);
+			Util.log("[findNearestExplorationState] UIState todoState = " + todoState);
 			toState = this.findExplorationState(todoState);
 
-			List<UIAction> actions = copmuteShortestPath(fromState, toState);
-			int numSteps = actions.size();
+			// @CHANGE: [svg153] findExplorationState problem if states is empty
+			if (toState != null) {
+				List<UIAction> actions = copmuteShortestPath(fromState, toState);
+				int numSteps = actions.size();
 
-			if (numSteps < minSteps) {
-				minSteps = numSteps;
-				ret = toState;
+				if (numSteps < minSteps) {
+					minSteps = numSteps;
+					ret = toState;
+				}
+
+				Util.log("Considering TO-DO: " + toState.dumpShort() + " " + numSteps + " steps away");
+
+				// shortcut, won't be shorter than this, so stop!
+				if (minSteps == 0) {
+					break;
+				}
 			}
 
-			Util.log("Considering TO-DO: " + toState.dumpShort() + " " + numSteps + " steps away");
-
-			// shortcut, won't be shorter than this, so stop!
-			if (minSteps == 0) {
-				break;
-			}
+			//
 		}
 
 		Util.log("Found: " + ((ret == null) ? "NULL" : ret.dumpShort()));

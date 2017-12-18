@@ -70,6 +70,7 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 	private Configurator mConfig = Configurator.getInstance();
 
 	private String appName, packName, launcherPackName;
+	private int time_to_run_app; // -> TIMEOUT
 	private int uid; // used by network usage monitor
 	private final long WINDOW_CONTENT_UPDATE_PERIOD = 2000; // 2s
 	private final long WINDOW_CONTENT_UPDATE_TIMEOUT = 60000; // 60000; // 60s
@@ -233,8 +234,10 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 
 		long startTimeMillis = SystemClock.uptimeMillis();
 		long currTimeMillis;
-//		final long TIMEOUT = 1200000; // 20 mins
-		final long TIMEOUT = 3600000; // 1 hour
+		// final long TIMEOUT = 1200000; // 20 mins
+		// @TODO:
+		final long TIMEOUT = time_to_run_app;
+		// final long TIMEOUT = 3600000; // 1 hour
 
 		while (!finalDone) {
 			currTimeMillis = SystemClock.uptimeMillis();
@@ -545,6 +548,7 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 			br = new BufferedReader(new FileReader("/data/local/tmp/app.info"));
 			packName = br.readLine().trim();
 			appName = br.readLine().trim();
+			time_to_run_app = Integer.parseInt(br.readLine().trim());
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
