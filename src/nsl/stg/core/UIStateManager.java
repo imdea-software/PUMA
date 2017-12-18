@@ -17,6 +17,10 @@ public class UIStateManager {
 		slist = new ArrayList<UIState>();
 	}
 
+	/**
+	 *
+	 * @return
+     */
 	public static UIStateManager getInstance() {
 		if (self == null) {
 			self = new UIStateManager();
@@ -24,6 +28,10 @@ public class UIStateManager {
 		return self;
 	}
 
+	/**
+	 * Add s to slist
+	 * @param s
+     */
 	public void addState(UIState s) {
 		if (getState(s) == null) {
 			Util.log("New UIState: " + s.dumpShort());
@@ -31,30 +39,51 @@ public class UIStateManager {
 		}
 	}
 
+	/**
+	 *
+	 * @param s UIState
+	 * @return state2ret First UIState from slist (UIState list) that is computeCosineSimilarity(s) >= SIMILARITY_THRESHOLD
+     */
 	public UIState getState(UIState s) {
-		for (int i = 0; i < slist.size(); i++) {
+		UIState state2ret = null;
+		boolean find = false;
+
+		for (int i = 0; i < slist.size() && !find; i++) {
 			UIState state = slist.get(i);
 
 			// return on the first found
 			if (state.computeCosineSimilarity(s) >= SIMILARITY_THRESHOLD) {
-				return state;
+				state2ret = state;
+				find = true;
 			}
 		}
 
-		return null;
+		return state2ret;
 	}
 
+	/**
+	 *
+	 * @return s2ret First UIState from slist (UIState list) that is not fully explored
+     */
 	public UIState getNextTodoState() {
-		for (int i = 0; i < slist.size(); i++) {
+		UIState s2ret = null;
+		boolean find = false;
+
+		for (int i = 0; i < slist.size() && !find; i++) {
 			UIState s = slist.get(i);
 			if (!s.isFullyExplored()) {
-				return s;
+				s2ret = s;
+				find = true;
 			}
 		}
 
-		return null;
+		return s2ret;
 	}
 
+	/**
+	 *
+	 * @return
+     */
 	public List<UIState> getAllTodoState() {
 		List<UIState> ret = new ArrayList<UIState>();
 
@@ -68,6 +97,10 @@ public class UIStateManager {
 		return ret;
 	}
 
+	/**
+	 *
+	 * @return
+     */
 	public int getExecutionSnapshot() {
 		int total = 0, finished = 0;
 		for (int i = 0; i < slist.size(); i++) {
@@ -83,10 +116,18 @@ public class UIStateManager {
 		return total + finished;
 	}
 
+	/**
+	 *
+	 * @return
+     */
 	public String dumpShort() {
 		return "{" + slist.size() + " UIStates }";
 	}
 
+	/**
+	 *
+	 * @return
+     */
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
