@@ -102,7 +102,7 @@ public class AccessibilityEventProcessor {
 
 					if (remainingTimeMillis <= 0) {
 						// throw new RuntimeException("No event");
-						Util.log("TIMEOUT");
+						Util.log("AccessibilityEventProcessor: synchronized: TIMEOUT");
 						break;
 					}
 					try {
@@ -149,7 +149,7 @@ public class AccessibilityEventProcessor {
 							long remainingTimeMillis = timeoutMillis - elapsedTimeMillis;
 
 							if (remainingTimeMillis <= 0) {
-								Util.log("TIMEOUT");
+								Util.log("AccessibilityEventProcessor: waitForLastEventNonBlocking: TIMEOUT");
 								break;
 							}
 
