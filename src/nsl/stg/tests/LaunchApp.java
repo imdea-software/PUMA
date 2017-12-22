@@ -70,7 +70,7 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 	private Configurator mConfig = Configurator.getInstance();
 
 	private String appName, packName, launcherPackName;
-	private int time_to_run_app; // -> TIMEOUT
+	private int time_to_run_app_milis; // set in loadAppInfo(), then value to TIMEOUT
 	private int uid; // used by network usage monitor
 	private final long WINDOW_CONTENT_UPDATE_PERIOD = 2000; // 2s
 	private final long WINDOW_CONTENT_UPDATE_TIMEOUT = 60000; // 60000; // 60s
@@ -236,13 +236,13 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 		long currTimeMillis;
 		// final long TIMEOUT = 1200000; // 20 mins
 		// @TODO:
-		final long TIMEOUT = time_to_run_app;
+		final long TIMEOUT = time_to_run_app_milis;
 		// final long TIMEOUT = 3600000; // 1 hour
 
 		while (!finalDone) {
 			currTimeMillis = SystemClock.uptimeMillis();
 			if (currTimeMillis - startTimeMillis > TIMEOUT) {
-				Util.log("TIMEOUT");
+				Util.log("LaunchApp: TIMEOUT");
 				break;
 			}
 
@@ -526,7 +526,7 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 		}
 	}
 
-	// Loads UID, package name and label
+	// Loads UID, package name, label and time to run PUMA
 	private void loadAppInfo() {
 		BufferedReader br = null;
 		try {
@@ -547,8 +547,12 @@ public class LaunchApp extends MyUiAutomatorTestCase {
 		try {
 			br = new BufferedReader(new FileReader("/data/local/tmp/app.info"));
 			packName = br.readLine().trim();
+			Util.log("packName: " + packName);
 			appName = br.readLine().trim();
-			time_to_run_app = Integer.parseInt(br.readLine().trim());
+			Util.log("appName: " + appName);
+			int time_to_run_app_minutes = Integer.parseInt(br.readLine().trim());
+            time_to_run_app_milis = time_to_run_app_minutes * 60 * 1000;
+			Util.log("time_to_run_app_milis: " + time_to_run_app_milis);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
